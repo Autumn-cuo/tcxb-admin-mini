@@ -1,70 +1,21 @@
-// ===== 默认数据 =====
-let partners = [
-  {
-    name: '李四',
-    course: '数据结构',
-    progressCurrent: 3,
-    progressTotal: 12,
-    rating: 4.8,
-    matchedAt: '2026-03-01'
-  }
-];
+// ===== 数据（由后端加载）=====
+const BASE = window.API_BASE || '/tcxb-admin-mini';
 
-let upcomingRecords = [
-  {
-    id: 1001,
-    partner: '李四',
-    course: '数据结构',
-    date: '2026-03-14',
-    time: '19:00-21:00',
-    place: '图书馆3楼自习室'
-  },
-  {
-    id: 1002,
-    partner: '李四',
-    course: '数据结构',
-    date: '2026-03-16',
-    time: '14:00-16:00',
-    place: '图书馆3楼自习室'
-  }
-];
-
-let historyRecords = [
-  {
-    id: 2001,
-    partner: '李四',
-    course: '数据结构',
-    date: '2026-03-08',
-    time: '19:00-21:00',
-    place: '图书馆2楼',
-    score: 5.0
-  },
-  {
-    id: 2002,
-    partner: '李四',
-    course: '数据结构',
-    date: '2026-03-10',
-    time: '14:00-16:00',
-    place: '教学楼A302',
-    score: 5.0
-  },
-  {
-    id: 2003,
-    partner: '李四',
-    course: '数据结构',
-    date: '2026-03-12',
-    time: '09:00-11:00',
-    place: '图书馆1楼',
-    score: 5.0
-  }
-];
+let partners = [];
+let upcomingRecords = [];
+let historyRecords = [];
+let receivedApplications = [];
 
 let currentCheckinRecord = null;
 
-// ===== 本地存储 key =====
-const PARTNER_KEY = 'appliedPartners';
-const UPCOMING_KEY = 'tc_upcoming_records';
-const HISTORY_KEY = 'tc_history_records';
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem('tc_current_user'));
+    return (user && user.userId) ? user.userId : null;
+  } catch (e) {
+    return null;
+  }
+}
 
 // ===== DOM =====
 const partnerList = document.getElementById('partnerList');
@@ -208,66 +159,86 @@ function resetScheduleForm() {
 }
 
 // ===== 本地存储 =====
-function loadPartners() {
-  const saved = localStorage.getItem(PARTNER_KEY);
-  if (!saved) return;
-
-  const parsed = safeParse(saved, []);
-  if (!Array.isArray(parsed) || !parsed.length) return;
-
-  const defaultNames = new Set(partners.map(item => item.name));
-  const extraPartners = parsed.filter(item => !defaultNames.has(item.name));
-  partners = [...partners, ...extraPartners];
-}
-
-function loadUpcomingRecords() {
-  const saved = localStorage.getItem(UPCOMING_KEY);
-  if (!saved) return;
-
-  const parsed = safeParse(saved, []);
-  if (Array.isArray(parsed)) {
-    upcomingRecords = parsed;
+// ===== 后端数据加载 =====
+async function loadPartners() {
+  const userId = getCurrentUserId();
+  if (!userId) return;
+  try {
+    const res = await fetch(`${BASE}/partner?action=myPartners&userId=${userId}`);
+    const result = await res.json();
+    if (result.code === 200 && Array.isArray(result.data)) {
+      partners = result.data.map(item => ({
+        name: item.partnerName || `用户${item.partnerUserId}`,
+        partnerUserId: item.partnerUserId,
+        course: item.course || '',
+        progressCurrent: item.progressCurrent || 0,
+        progressTotal: item.progressTotal || 12,
+        rating: item.partnerTrustScore != null ? (item.partnerTrustScore / 20).toFixed(1) : '5.0',
+        matchedAt: item.createdAt ? item.createdAt.substring(0, 10) : ''
+      }));
+    }
+  } catch (e) {
+    console.error('加载学伴失败:', e);
   }
 }
 
-function loadHistoryRecords() {
-  const saved = localStorage.getItem(HISTORY_KEY);
-  if (!saved) return;
-
-  const parsed = safeParse(saved, []);
-  if (Array.isArray(parsed)) {
-    historyRecords = parsed;
+async function loadUpcomingRecords() {
+  const userId = getCurrentUserId();
+  if (!userId) return;
+  try {
+    const res = await fetch(`${BASE}/schedule?action=myUpcoming&userId=${userId}`);
+    const result = await res.json();
+    if (result.code === 200 && Array.isArray(result.data)) {
+      upcomingRecords = result.data.map(item => ({
+        id: item.scheduleId,
+        partner: item.partnerName || '',
+        partnerUserId: item.partnerUserId,
+        course: item.course || '',
+        date: item.studyDate || '',
+        time: item.studyTime || '',
+        place: item.studyPlace || ''
+      }));
+    }
+  } catch (e) {
+    console.error('加载即将到来的学习失败:', e);
   }
 }
 
-function savePartners() {
-  const purePartners = partners.filter(item => item.name !== '李四');
-  localStorage.setItem(PARTNER_KEY, JSON.stringify(purePartners));
+async function loadHistoryRecords() {
+  const userId = getCurrentUserId();
+  if (!userId) return;
+  try {
+    const res = await fetch(`${BASE}/schedule?action=myHistory&userId=${userId}`);
+    const result = await res.json();
+    if (result.code === 200 && Array.isArray(result.data)) {
+      historyRecords = result.data.map(item => ({
+        id: item.scheduleId,
+        partner: item.partnerName || '',
+        partnerUserId: item.partnerUserId,
+        course: item.course || '',
+        date: item.studyDate || '',
+        time: item.studyTime || '',
+        place: item.studyPlace || '',
+        score: item.score != null ? item.score : 5.0
+      }));
+    }
+  } catch (e) {
+    console.error('加载学习历史失败:', e);
+  }
 }
 
-function saveUpcomingRecords() {
-  localStorage.setItem(UPCOMING_KEY, JSON.stringify(upcomingRecords));
-}
-
-function saveHistoryRecords() {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(historyRecords));
-}
-
-// ===== 进度同步 =====
-function syncPartnerProgress() {
-  partners = partners.map(partner => {
-    const finishedCount = historyRecords.filter(
-        record => record.partner === partner.name
-    ).length;
-
-    return {
-      ...partner,
-      progressCurrent: finishedCount,
-      progressTotal: partner.progressTotal || 12
-    };
-  });
-
-  savePartners();
+async function loadReceivedApplications() {
+  const userId = getCurrentUserId();
+  if (!userId) return;
+  try {
+    const res = await fetch(`${BASE}/partner?action=myReceived&userId=${userId}`);
+    const result = await res.json();
+    if (result.code === 200 && Array.isArray(result.data)) {
+      receivedApplications = result.data;
+    }
+  } catch (e) {
+    console.error('加载收到的申请失败:', e);
+  }
 }
 
 // ===== 统计渲染 =====
@@ -452,36 +423,60 @@ if (closeScheduleBtn) {
 }
 
 if (submitScheduleBtn) {
-  submitScheduleBtn.addEventListener('click', () => {
-    const partner = schedulePartner ? schedulePartner.value.trim() : '';
+  submitScheduleBtn.addEventListener('click', async () => {
+    const partnerValue = schedulePartner ? schedulePartner.value.trim() : '';
     const date = scheduleDate ? scheduleDate.value.trim() : '';
     const time = scheduleTime ? scheduleTime.value.trim() : '';
     const place = schedulePlace ? schedulePlace.value.trim() : '';
 
-    const validationMessage = validateScheduleForm(partner, date, time, place);
+    const validationMessage = validateScheduleForm(partnerValue, date, time, place);
     if (validationMessage) {
       alert(validationMessage);
       return;
     }
 
-    const selectedPartner = partners.find(item => item.name === partner);
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert('请先登录');
+      return;
+    }
 
-    upcomingRecords.unshift({
-      id: Date.now(),
-      partner,
-      course: selectedPartner ? selectedPartner.course : '学习任务',
-      date,
-      time,
-      place
-    });
+    const selectedPartner = partners.find(item => item.name === partnerValue);
+    const partnerUserId = selectedPartner ? selectedPartner.partnerUserId : null;
+    if (!partnerUserId) {
+      alert('未找到学伴信息，请刷新后重试');
+      return;
+    }
 
-    saveUpcomingRecords();
-    renderAll();
+    try {
+      const res = await fetch(`${BASE}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'add',
+          userId,
+          partnerUserId,
+          course: selectedPartner ? selectedPartner.course : '',
+          studyDate: date,
+          studyTime: time,
+          studyPlace: place
+        })
+      });
+      const result = await res.json();
 
-    if (schedulePanel) schedulePanel.classList.add('hidden');
-    resetScheduleForm();
-
-    alert('学习安排创建成功！');
+      if (result.code === 200) {
+        await loadUpcomingRecords();
+        renderAll();
+        if (schedulePanel) schedulePanel.classList.add('hidden');
+        resetScheduleForm();
+        alert('学习安排创建成功！');
+      } else {
+        alert(result.msg || '创建失败');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('请求失败，请检查后端是否启动');
+    }
   });
 }
 
@@ -533,41 +528,136 @@ if (checkinModal) {
 
 // ===== 确认签到 =====
 if (confirmCheckinBtn) {
-  confirmCheckinBtn.addEventListener('click', () => {
+  confirmCheckinBtn.addEventListener('click', async () => {
     if (!currentCheckinRecord) return;
 
-    upcomingRecords = upcomingRecords.filter(
-        item => item.id !== currentCheckinRecord.id
-    );
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert('请先登录');
+      return;
+    }
 
-    historyRecords.unshift({
-      id: Date.now(),
-      partner: currentCheckinRecord.partner,
-      course: currentCheckinRecord.course,
-      date: currentCheckinRecord.date,
-      time: currentCheckinRecord.time,
-      place: currentCheckinRecord.place,
-      score: 5.0
-    });
+    confirmCheckinBtn.disabled = true;
 
-    saveUpcomingRecords();
-    saveHistoryRecords();
-    syncPartnerProgress();
+    try {
+      const res = await fetch(`${BASE}/checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'checkin',
+          userId,
+          scheduleId: currentCheckinRecord.id
+        })
+      });
+      const result = await res.json();
 
-    closeCheckinModal();
-    renderAll();
-
-    alert('签到成功，已同步到学习历史和合作进度！');
+      if (result.code === 200) {
+        await loadUpcomingRecords();
+        await loadHistoryRecords();
+        await loadPartners();
+        closeCheckinModal();
+        renderAll();
+        alert('签到成功，信誉分 +1，已同步到学习历史！');
+      } else {
+        alert(result.msg || '签到失败');
+        closeCheckinModal();
+      }
+    } catch (e) {
+      console.error(e);
+      alert('签到请求失败，请检查后端是否启动');
+      closeCheckinModal();
+    } finally {
+      confirmCheckinBtn.disabled = false;
+    }
   });
 }
 
+// ===== 收到的学伴申请渲染 =====
+const receivedApplySection = document.getElementById('receivedApplySection');
+const receivedApplyList = document.getElementById('receivedApplyList');
+const receivedApplyBadge = document.getElementById('receivedApplyBadge');
+
+function renderReceivedApplications() {
+  if (!receivedApplySection || !receivedApplyList) return;
+
+  if (!receivedApplications.length) {
+    receivedApplySection.classList.add('hidden');
+    return;
+  }
+
+  receivedApplySection.classList.remove('hidden');
+  if (receivedApplyBadge) receivedApplyBadge.textContent = receivedApplications.length;
+
+  receivedApplyList.innerHTML = receivedApplications.map(item => `
+    <div class="apply-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+      <div>
+        <div style="font-weight:600;">${item.applicantName || '未知用户'} 想成为你的学伴</div>
+        <div style="font-size:12px;color:#888;margin-top:4px;">${item.message || '（无留言）'}</div>
+        <div style="font-size:12px;color:#aaa;">${item.applyTime ? String(item.applyTime).substring(0, 10) : ''}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="primary-btn accept-apply-btn" data-apply-id="${item.applyId}" style="padding:6px 14px;font-size:13px;">接受</button>
+        <button class="secondary-btn reject-apply-btn" data-apply-id="${item.applyId}" style="padding:6px 14px;font-size:13px;">拒绝</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.addEventListener('click', async (e) => {
+  const acceptBtn = e.target.closest('.accept-apply-btn');
+  const rejectBtn = e.target.closest('.reject-apply-btn');
+
+  const btn = acceptBtn || rejectBtn;
+  if (!btn) return;
+
+  const applyId = btn.dataset.applyId;
+  const applyStatus = acceptBtn ? 1 : 2;
+  const userId = getCurrentUserId();
+  if (!userId || !applyId) return;
+
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${BASE}/partner`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'handleApply',
+        applyId,
+        userId,
+        applyStatus
+      })
+    });
+    const result = await res.json();
+
+    if (result.code === 200) {
+      alert(result.msg || '操作成功');
+      await loadAll();
+    } else {
+      alert(result.msg || '操作失败');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('操作失败，请检查后端是否启动');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // ===== 初始化 =====
-function init() {
-  loadUpcomingRecords();
-  loadHistoryRecords();
-  loadPartners();
-  syncPartnerProgress();
+async function loadAll() {
+  await Promise.all([
+    loadPartners(),
+    loadUpcomingRecords(),
+    loadHistoryRecords(),
+    loadReceivedApplications()
+  ]);
+  renderReceivedApplications();
   renderAll();
+}
+
+async function init() {
+  await loadAll();
 }
 
 init();

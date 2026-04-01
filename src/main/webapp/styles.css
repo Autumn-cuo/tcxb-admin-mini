@@ -3100,6 +3100,18 @@ body.page-my-partners .empty-box {padding: 28px 20px;
   text-align: center;
   color: #8a94a6;}
 
+body.page-my-partners .received-panel {margin: 16px 0;
+  grid-column: 1 / -1;}
+
+body.page-my-partners .badge {display: inline-block;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;}
+
 /* ===== partner-profile.css -> .page-partner-profile ===== */
 
 body.page-partner-profile * {box-sizing: border-box;
