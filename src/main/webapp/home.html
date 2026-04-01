@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同窗学伴 - 首页</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-home">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <span class="brand-name">同窗学伴</span>
+      </div>
+
+      <nav class="nav">
+        <a href="home.html" class="nav-item active">首页</a>
+        <a href="find-partner.html" class="nav-item">寻找学伴</a>
+        <a href="my-partners.html" class="nav-item">我的学伴</a>
+        <a href="report.html" class="nav-item">举报与黑名单</a>
+        <a href="javascript:void(0)" class="nav-item admin-entry">管理后台</a>
+      </nav>
+
+      <div class="user-box">
+        <div class="avatar">👨</div>
+        <div>
+          <div class="user-name">张三</div>
+          <div class="user-score">信誉分 4.8</div>
+        </div>
+        <div class="logout">↩</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page-header">
+      <h1>欢迎回来，张三</h1>
+      <p>继续你的学习之旅，找到最合适的学习伙伴</p>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">1</div>
+        <div class="stat-label">当前学伴</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">24</div>
+        <div class="stat-label">完成学习</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pendingApplyCount">2</div>
+        <div class="stat-label">待处理申请</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">4.8</div>
+        <div class="stat-label">信任分数</div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="profile-card">
+        <div class="profile-card-head">
+          <h2>个人档案</h2>
+          <button class="edit-profile-btn" id="editProfileBtn">编辑资料</button>
+        </div>
+
+        <div class="big-avatar">👨</div>
+        <div class="profile-name" id="profileName">张三</div>
+        <div class="profile-id" id="profileStudentNo">2021001234</div>
+        <div class="profile-score" id="profileScore">★ 4.8 信任分</div>
+
+        <div class="info-block">
+          <div class="label">专业</div>
+          <div id="profileMajor">计算机科学与技术</div>
+        </div>
+
+        <div class="info-block">
+          <div class="label">年级</div>
+          <div id="profileGrade">大三年级</div>
+        </div>
+
+        <div class="info-block">
+          <div class="label">在修课程</div>
+          <div class="tag-list" id="profileCourses">
+            <span class="tag">数据结构</span>
+            <span class="tag">算法设计</span>
+            <span class="tag">操作系统</span>
+            <span class="tag">计算机网络</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-column">
+<section class="demand-card">
+  <div class="card-head">
+    <h2>我的学伴需求</h2>
+    <button class="publish-btn" id="showPublishBtn">＋ 发布需求</button>
+  </div>
+
+  <div id="publishPanel" class="publish-panel hidden">
+    <h3 class="publish-title">发布学伴需求</h3>
+
+    <div class="form-item">
+      <label>课程名称</label>
+      <select id="courseSelect"></select>
+      <input
+              type="text"
+              id="customCourseInput"
+              class="hidden"
+              placeholder="请输入自定义课程名称"
+              style="margin-top: 10px;"
+      />
+    </div>
+
+    <div class="form-item">
+      <label>学习目标</label>
+      <input
+        type="text"
+        id="studyGoal"
+        placeholder="例如：准备期末考试、完成课程项目"
+      />
+    </div>
+
+    <div class="form-item">
+      <label>偏好时间</label>
+      <div class="option-group" id="timeOptions">
+        <button type="button" class="option-btn" data-value="早上">早上</button>
+        <button type="button" class="option-btn" data-value="下午">下午</button>
+        <button type="button" class="option-btn" data-value="晚上">晚上</button>
+        <button type="button" class="option-btn" data-value="周末">周末</button>
+      </div>
+    </div>
+
+    <div class="form-item">
+      <label>偏好地点</label>
+      <div class="option-group" id="placeOptions">
+        <button type="button" class="option-btn" data-value="图书馆">图书馆</button>
+        <button type="button" class="option-btn" data-value="自习室">自习室</button>
+        <button type="button" class="option-btn" data-value="咖啡厅">咖啡厅</button>
+        <button type="button" class="option-btn" data-value="实验室">实验室</button>
+      </div>
+    </div>
+
+    <div class="form-item">
+      <label>需求描述</label>
+      <textarea
+        id="demandDesc"
+        placeholder="描述你的学习需求和期望..."
+      ></textarea>
+    </div>
+
+    <div class="publish-actions">
+      <button class="submit-btn" id="submitDemandBtn">发布需求</button>
+      <button class="cancel-btn" id="cancelPublishBtn">取消</button>
+    </div>
+  </div>
+
+  <div id="demandList">
+    <div class="demand-item" data-demand-id="demand_ds_001">
+    <div class="demand-title-row">
+        <div class="demand-title">
+        数据结构 <span class="mini-tag green-tag">活跃</span>
+        </div>
+    </div>
+    <div class="demand-desc">
+        希望找一个学伴一起刷算法题，准备期末考试。我对树和图相关的算法掌握较好，希望能在动态规划方面互相帮助。
+    </div>
+    <div class="meta-row">
+        <span>偏好时间：晚上、周末</span>
+        <span>偏好地点：图书馆、自习室</span>
+    </div>
+    <div class="bottom-row">
+        <span>发布于 2026-03-10</span>
+        <span>2 个申请</span>
+        <div class="demand-action-group">
+        <button class="small-btn">查看申请</button>
+        <button class="delete-btn">删除</button>
+        </div>
+    </div>
+    </div>
+    <div class="demand-item gray-item" data-demand-id="demand_os_001">
+    <div class="demand-title-row">
+      <div class="demand-title">
+        操作系统 <span class="mini-tag blue-tag">已匹配</span>
+      </div>
+    </div>
+    <div class="demand-desc">
+      需要学伴一起完成操作系统实验，讨论进程管理和内存管理相关知识点。
+    </div>
+    <div class="bottom-row">
+      <span>发布于 2026-02-15</span>
+      <span class="matched-text">已匹配学伴</span>
+    </div>
+  </div>
+</div>
+
+</section>
+      </div>
+    </section>
+
+    <div class="apply-modal hidden" id="applyModal">
+      <div class="apply-modal-mask" id="applyModalMask"></div>
+      <div class="apply-modal-dialog">
+        <div class="apply-modal-head">
+          <h3 id="applyModalTitle">查看申请</h3>
+          <button class="apply-close-btn" id="closeApplyModalBtn">×</button>
+        </div>
+
+        <div class="apply-modal-body" id="applyModalBody">
+          <!-- JS 动态渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-modal hidden" id="profileModal">
+      <div class="profile-modal-mask" id="profileModalMask"></div>
+      <div class="profile-modal-dialog">
+        <div class="profile-modal-head">
+          <h3>编辑个人资料</h3>
+          <button class="profile-close-btn" id="closeProfileModalBtn">×</button>
+        </div>
+
+        <div class="profile-modal-body">
+          <div class="form-item">
+            <label>姓名</label>
+            <input type="text" id="editName" placeholder="请输入姓名" />
+          </div>
+
+          <div class="form-item">
+            <label>学号</label>
+            <input type="text" id="editStudentNo" disabled />
+          </div>
+
+          <div class="form-item">
+            <label>专业</label>
+            <input type="text" id="editMajor" placeholder="请输入专业" />
+          </div>
+
+          <div class="form-item">
+            <label>年级</label>
+            <input type="text" id="editGrade" placeholder="例如：大二年级" />
+          </div>
+
+          <div class="form-item">
+            <label>在修课程</label>
+            <input
+                    type="text"
+                    id="editCourses"
+                    placeholder="多个课程请用中文逗号分隔，例如：数据结构，操作系统，计算机网络"
+            />
+          </div>
+
+          <div class="profile-modal-actions">
+            <button class="submit-btn" id="saveProfileBtn">保存</button>
+            <button class="cancel-btn" id="cancelProfileBtn">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="admin-auth.js"></script>
+  <script src="home.js"></script>
+  <script>
+    bindLogout('.logout', 'login.html');
+    bindAdminEntry('.admin-entry');
+  </script>
+</body>
+</html>

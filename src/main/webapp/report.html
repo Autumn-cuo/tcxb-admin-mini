@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同窗学伴 - 举报与黑名单</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-report">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <span class="brand-name">同窗学伴</span>
+      </div>
+
+      <nav class="nav">
+        <a href="home.html" class="nav-item">首页</a>
+        <a href="find-partner.html" class="nav-item">寻找学伴</a>
+        <a href="my-partners.html" class="nav-item">我的学伴</a>
+        <a href="report.html" class="nav-item active">举报与黑名单</a>
+        <a href="javascript:void(0)" class="nav-item admin-entry">管理后台</a>
+      </nav>
+
+      <div class="user-box">
+        <div class="avatar">👨</div>
+        <div class="user-meta">
+          <div class="user-name">张三</div>
+          <div class="user-score">信誉分 4.8</div>
+        </div>
+        <div class="logout">↩</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page-header">
+      <h1>举报与黑名单</h1>
+      <p>维护良好的学习环境，保护你的权益</p>
+    </section>
+
+    <section class="tab-bar">
+      <button class="tab active" data-tab="report">
+        <span>⚑</span>
+        <span>我的举报</span>
+      </button>
+
+      <button class="tab" data-tab="blacklist">
+        <span>⊘</span>
+        <span>黑名单管理</span>
+      </button>
+    </section>
+
+    <section class="tab-content active" id="report-content">
+      <section class="panel report-form-panel">
+        <div class="panel-title">提交举报</div>
+
+        <div class="form-area">
+          <div class="form-item">
+            <label>举报用户</label>
+              <select id="reportUser">
+                <option value="">选择要举报的学习搭子</option>
+              </select>
+          </div>
+
+          <div class="form-item">
+            <label>举报原因</label>
+            <select id="reportReason">
+              <option value="">选择举报原因</option>
+              <option value="多次爽约">多次爽约</option>
+              <option value="骚扰信息">骚扰信息</option>
+              <option value="学习态度不端正">学习态度不端正</option>
+              <option value="不文明言论">不文明言论</option>
+            </select>
+          </div>
+
+          <div class="form-item">
+            <label>详细描述</label>
+            <textarea id="reportDesc" placeholder="请详细描述举报的具体情况..."></textarea>
+          </div>
+
+          <div class="form-item">
+            <label>上传凭证截图</label>
+
+            <div class="upload-box">
+              <input type="file" id="reportImage" accept="image/*" hidden />
+              <button type="button" class="upload-btn" id="triggerUploadBtn">选择文件</button>
+              <span class="file-name" id="fileNameText">未选择文件</span>
+            </div>
+
+            <div class="upload-tip">
+              支持上传聊天截图、学习记录截图等作为举报凭证
+            </div>
+          </div>
+
+          <div class="warn-box">
+            <div class="warn-title">举报须知</div>
+            <ul>
+              <li>请确保举报内容真实有效</li>
+              <li>恶意举报将影响您的信誉分数</li>
+              <li>我们会在 3 个工作日内处理您的举报</li>
+            </ul>
+          </div>
+
+          <div class="btn-row">
+            <button class="danger-btn" id="reportBtn">提交举报</button>
+            <button class="light-btn" id="resetReportBtn">重置</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">举报记录</div>
+        <div id="reportRecordList"></div>
+      </section>
+    </section>
+
+    <section class="tab-content" id="blacklist-content">
+      <section class="panel">
+        <div class="panel-title">黑名单用户</div>
+        <div id="blacklistRecordList"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="admin-auth.js"></script>
+  <script src="report.js"></script>
+  <script>
+    bindLogout('.logout', 'login.html');
+    bindAdminEntry('.admin-entry');
+  </script>
+</body>
+</html>

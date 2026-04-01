@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同窗学伴 - 寻找学伴</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-find-partner">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <span class="brand-name">同窗学伴</span>
+      </div>
+
+      <nav class="nav">
+        <a href="home.html" class="nav-item">首页</a>
+        <a href="find-partner.html" class="nav-item active">寻找学伴</a>
+        <a href="my-partners.html" class="nav-item">我的学伴</a>
+        <a href="report.html" class="nav-item">举报与黑名单</a>
+        <a href="#" class="nav-item admin-entry">管理后台</a>
+      </nav>
+
+      <div class="user-box">
+        <div class="avatar">👨</div>
+        <div class="user-meta">
+          <div class="user-name">张三</div>
+          <div class="user-score">信誉分 4.8</div>
+        </div>
+        <div class="logout">↩</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page-header">
+      <h1>寻找学伴</h1>
+      <p>基于智能匹配算法，为你推荐最合适的学习伙伴</p>
+    </section>
+
+    <section class="filter-bar">
+      <div class="filter-left">
+        <select class="course-select" id="courseFilter">
+          <option value="all">所有课程</option>
+          <option value="数据结构">数据结构</option>
+          <option value="操作系统">操作系统</option>
+          <option value="计算机网络">计算机网络</option>
+        </select>
+
+        <div class="range-box">
+          <span>最低匹配度：</span>
+          <input type="range" id="matchRange" min="50" max="100" value="70" />
+          <span id="matchRangeValue">70%</span>
+        </div>
+      </div>
+
+      <div class="filter-right" id="resultCount">找到 3 个匹配结果</div>
+    </section>
+
+    <section class="content-grid">
+      <div class="left-panel" id="partnerList"></div>
+
+      <div class="detail-panel">
+        <div class="detail-header">
+          <div class="detail-user">
+            <div class="detail-avatar" id="detailAvatar">👩‍🦳</div>
+            <div>
+              <div class="detail-name" id="detailName">李四</div>
+              <div class="detail-major" id="detailMajor">计算机科学与技术 · 大三年级 · 2021001235</div>
+              <div class="detail-score">★ <span id="detailScore">4.9</span> 信任分</div>
+              <div class="detail-intro" id="detailIntro">认真学习，追求卓越，喜欢有计划地推进学习任务。</div>
+            </div>
+          </div>
+
+          <div class="detail-match" id="detailMatch">95%</div>
+        </div>
+
+        <div class="reason-panel">
+          <div class="section-title">为什么推荐 TA？</div>
+          <div id="reasonList"></div>
+        </div>
+
+        <div class="info-panel">
+          <div class="section-title">详细信息</div>
+
+          <div class="tag-group">
+            <div class="group-label">在修课程</div>
+            <div id="courseTags"></div>
+          </div>
+
+          <div class="tag-group">
+            <div class="group-label">偏好时间</div>
+            <div id="timeTags"></div>
+          </div>
+
+          <div class="tag-group">
+            <div class="group-label">偏好地点</div>
+            <div id="placeTags"></div>
+          </div>
+
+          <div class="tag-group">
+            <div class="group-label">学习风格</div>
+            <div id="styleTags"></div>
+          </div>
+        </div>
+
+        <div class="detail-btn-row">
+           <button class="ghost-btn" id="viewProfileBtn">查看主页</button>
+            <button class="apply-btn" id="applyBtn">发送学伴申请</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="admin-auth.js"></script>
+  <script src="find-partner.js"></script>
+  <script>
+    bindLogout('.logout', 'login.html');
+    bindAdminEntry('.admin-entry');
+  </script>
+</body>
+</html>

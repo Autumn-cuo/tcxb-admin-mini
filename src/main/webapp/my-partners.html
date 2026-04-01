@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同窗学伴 - 我的学伴</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-my-partners">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <span class="brand-name">同窗学伴</span>
+      </div>
+
+      <nav class="nav">
+        <a href="home.html" class="nav-item">首页</a>
+        <a href="find-partner.html" class="nav-item">寻找学伴</a>
+        <a href="my-partners.html" class="nav-item active">我的学伴</a>
+        <a href="report.html" class="nav-item">举报与黑名单</a>
+        <a href="javascript:void(0)" class="nav-item admin-entry">管理后台</a>
+      </nav>
+
+      <div class="user-box">
+        <div class="avatar">👨</div>
+        <div class="user-meta">
+          <div class="user-name">张三</div>
+          <div class="user-score">信誉分 4.8</div>
+        </div>
+        <div class="logout">↩</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page-header">
+      <h1>我的学伴</h1>
+      <p>管理你的学习伙伴和学习安排</p>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="partnerCount">1</div>
+        <div class="stat-label">当前学伴</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="historyCount">3</div>
+        <div class="stat-label">已完成学习</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="upcomingCount">2</div>
+        <div class="stat-label">待完成学习</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="averageScore">5.0</div>
+        <div class="stat-label">平均评分</div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="left-panel">
+        <div class="panel">
+          <div class="panel-title">学伴列表</div>
+          <div id="partnerList"></div>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title no-border">即将到来的学习</div>
+              <div class="sub-text">记得准时签到打卡</div>
+            </div>
+            <button class="primary-btn" id="openScheduleBtn">+ 安排学习</button>
+          </div>
+
+          <div id="schedulePanel" class="schedule-panel hidden">
+            <div class="form-row">
+              <div class="form-item full">
+                <label>选择学伴</label>
+                <select id="schedulePartner">
+                  <option value="">选择学伴</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row two-col">
+              <div class="form-item">
+                <label>日期</label>
+                <input type="date" id="scheduleDate" />
+              </div>
+              <div class="form-item">
+                <label>时间</label>
+                <input type="text" id="scheduleTime" placeholder="例如：14:00-16:00" pattern="^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-item full">
+                <label>地点</label>
+                <input type="text" id="schedulePlace" placeholder="例如：图书馆3楼自习室" />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="primary-btn" id="submitScheduleBtn">确认安排</button>
+              <button class="secondary-btn" id="closeScheduleBtn">取消</button>
+            </div>
+          </div>
+
+          <div id="upcomingList"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">学习历史</div>
+          <div id="historyList"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-mask hidden" id="checkinModal">
+    <div class="modal-box">
+      <div class="modal-icon">📍</div>
+      <h2>学习签到</h2>
+      <p>请确认您已到达学习地点并准备开始学习</p>
+
+      <div class="checkin-info">
+        <div class="info-row"><span>学伴</span><span id="modalPartner">李四</span></div>
+        <div class="info-row"><span>日期</span><span id="modalDate">2026-03-14</span></div>
+        <div class="info-row"><span>时间</span><span id="modalTime">19:00-21:00</span></div>
+        <div class="info-row"><span>地点</span><span id="modalPlace">图书馆3楼自习室</span></div>
+      </div>
+
+      <div class="tip-box">
+        签到提醒：请在约定时间的 15 分钟内完成签到，逾期未签到将影响信誉分数。
+      </div>
+
+      <div class="btn-row modal-btn-row">
+        <button class="primary-btn" id="confirmCheckinBtn">确认签到</button>
+        <button class="secondary-btn" id="closeModalBtn">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="common.js"></script>
+  <script src="admin-auth.js"></script>
+  <script src="my-partners.js"></script>
+  <script>
+    bindLogout('.logout', 'login.html');
+    bindAdminEntry('.admin-entry');
+  </script>
+</body>
+</html>

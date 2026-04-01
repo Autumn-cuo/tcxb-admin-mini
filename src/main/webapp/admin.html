@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同窗学伴 - 管理后台</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="page-admin">
+  <!-- 顶部导航 -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <!-- 系统说明 -->
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <span class="brand-name">同窗学伴</span>
+      </div>
+
+      <!-- 导航菜单 -->
+      <nav class="nav">
+        <a href="home.html" class="nav-item">首页</a>
+        <a href="find-partner.html" class="nav-item">寻找学伴</a>
+        <a href="my-partners.html" class="nav-item">我的学伴</a>
+        <a href="report.html" class="nav-item">举报与黑名单</a>
+        <a href="admin.html" class="nav-item active">管理后台</a>
+      </nav>
+
+      <!-- 用户信息 -->
+      <div class="user-box">
+        <div class="avatar">👨</div>
+        <div class="user-meta">
+          <div class="user-name">张三</div>
+          <div class="user-score">信誉分 4.8</div>
+        </div>
+        <div class="logout">↩</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <main class="main">
+    <section class="page-header">
+      <h1>管理后台</h1>
+      <p>监控平台运营状况，管理用户和举报</p>
+    </section>
+
+    <!-- 统计卡片 -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="icon-box blue">👥</div>
+          <span class="trend up">↗ +12%</span>
+        </div>
+        <div class="stat-value" id="totalUserCount">5</div>
+        <div class="stat-label">总用户数</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="icon-box green">💓</div>
+          <span class="trend up">↗ +8%</span>
+        </div>
+        <div class="stat-value" id="activeUserCount">156</div>
+        <div class="stat-label">活跃用户</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="icon-box orange">🚩</div>
+          <span class="trend down">↙ -5%</span>
+        </div>
+        <div class="stat-value" id="pendingReportCount">1</div>
+        <div class="stat-label">待处理举报</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="icon-box purple">👤</div>
+          <span class="trend up">↗ +3%</span>
+        </div>
+        <div class="stat-value" id="matchSuccessRate">87%</div>
+        <div class="stat-label">匹配成功率</div>
+      </div>
+    </section>
+
+    <!-- 中间布局 -->
+    <section class="content-grid">
+      <!-- 左侧 -->
+      <div class="left-column">
+        <div class="panel">
+          <div class="panel-title">快捷操作</div>
+          <div class="quick-list">
+            <a class="quick-item" href="admin-manage.html?tab=users">
+              <div class="quick-left">
+                <div class="icon-box sm blue">👥</div>
+                <div>
+                  <div class="quick-name">用户管理</div>
+                </div>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+
+            <a class="quick-item" href="admin-manage.html?tab=reports">
+              <div class="quick-left">
+                <div class="icon-box sm orange">🚩</div>
+                <div>
+                  <div class="quick-name">举报管理</div>
+                  <div class="quick-desc">查看并处理举报记录</div>
+                </div>
+              </div>
+              <div class="arrow">→</div>
+            </a>
+          </div>
+        </div>
+
+        <div class="panel report-panel">
+          <div class="panel-title">
+            <span>待处理举报</span>
+          </div>
+
+          <div id="pendingReportCard">
+            <div class="report-item">
+              <div class="report-row">
+                <span class="warn">!</span>
+                <span class="report-user">举报用户：陈七</span>
+              </div>
+              <div class="report-reason">原因：多次爽约</div>
+              <div class="report-date">2026/3/10</div>
+              <a href="admin-manage.html?tab=reports" class="detail-link">查看详情 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧 -->
+      <div class="right-column">
+        <div class="panel">
+          <div class="panel-title">最近活动</div>
+          <div class="activity-list" id="recentActivityList">
+            <div class="activity-item">
+              <span class="dot blue-dot"></span>
+              <div class="activity-content">
+                <div class="activity-title">系统运行正常</div>
+                <div class="activity-time">刚刚</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel chart-panel">
+          <div class="panel-title">用户增长趋势</div>
+          <div class="chart-wrap">
+            <svg viewBox="0 0 760 260" class="chart-svg" preserveAspectRatio="none">
+              <line x1="50" y1="40" x2="730" y2="40" class="grid-line" />
+              <line x1="50" y1="90" x2="730" y2="90" class="grid-line" />
+              <line x1="50" y1="140" x2="730" y2="140" class="grid-line" />
+              <line x1="50" y1="190" x2="730" y2="190" class="grid-line" />
+
+              <line x1="50" y1="20" x2="50" y2="210" class="axis-line" />
+              <line x1="50" y1="210" x2="730" y2="210" class="axis-line" />
+
+              <polyline
+                points="70,180 125,172 180,165 235,150 290,138 345,126 400,118 455,100 510,88 565,78 620,68 690,55"
+                class="polyline"
+              />
+
+              <circle cx="70" cy="180" r="4" class="point" />
+              <circle cx="125" cy="172" r="4" class="point" />
+              <circle cx="180" cy="165" r="4" class="point" />
+              <circle cx="235" cy="150" r="4" class="point" />
+              <circle cx="290" cy="138" r="4" class="point" />
+              <circle cx="345" cy="126" r="4" class="point" />
+              <circle cx="400" cy="118" r="4" class="point" />
+              <circle cx="455" cy="100" r="4" class="point" />
+              <circle cx="510" cy="88" r="4" class="point" />
+              <circle cx="565" cy="78" r="4" class="point" />
+              <circle cx="620" cy="68" r="4" class="point" />
+              <circle cx="690" cy="55" r="4" class="point" />
+            </svg>
+
+            <div class="x-labels">
+              <span>1月</span>
+              <span>2月</span>
+              <span>3月</span>
+              <span>4月</span>
+              <span>5月</span>
+              <span>6月</span>
+              <span>7月</span>
+              <span>8月</span>
+              <span>9月</span>
+              <span>10月</span>
+              <span>11月</span>
+              <span>12月</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">系统状态</div>
+          <div class="system-grid">
+            <div class="system-card">
+              <div class="system-top">
+                <span>服务器状态</span>
+                <span class="ok">✓</span>
+              </div>
+              <div class="system-value">正常</div>
+            </div>
+
+            <div class="system-card">
+              <div class="system-top">
+                <span>响应时间</span>
+                <span class="pulse">〰</span>
+              </div>
+              <div class="system-value">45ms</div>
+            </div>
+
+            <div class="system-card">
+              <div class="system-top">
+                <span>数据库</span>
+                <span class="ok">✓</span>
+              </div>
+              <div class="system-value">正常</div>
+            </div>
+
+            <div class="system-card">
+              <div class="system-top">
+                <span>今日匹配</span>
+                <span class="trend-icon">↗</span>
+              </div>
+              <div class="system-value">127</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="auth.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    if (requireAdminPopupLogin()) {
+      bindLogout('.logout', 'login.html');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同窗学伴 - 用户与举报管理</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-admin-manage">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">🎓</div>
+        <span class="brand-name">同窗学伴</span>
+      </div>
+
+      <nav class="nav">
+        <a href="home.html" class="nav-item">首页</a>
+        <a href="find-partner.html" class="nav-item">寻找学伴</a>
+        <a href="my-partners.html" class="nav-item">我的学伴</a>
+        <a href="report.html" class="nav-item">举报与黑名单</a>
+        <a href="admin.html" class="nav-item active">管理后台</a>
+      </nav>
+
+      <div class="user-box">
+        <div class="avatar">🧑</div>
+        <div class="user-meta">
+          <div class="user-name">张三</div>
+          <div class="user-score">信誉分 4.8</div>
+        </div>
+        <div class="logout">↩</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="back-link">
+      <a href="admin.html">← 返回管理后台</a>
+    </div>
+
+    <section class="page-header">
+      <h1>用户与举报管理</h1>
+      <p>管理系统用户和处理用户举报</p>
+    </section>
+
+    <section class="tab-bar">
+      <button class="tab active" data-tab="users">
+        <span class="tab-icon">👤</span>
+        <span>用户管理</span>
+        <span class="tab-badge blue-badge">用户</span>
+      </button>
+
+      <button class="tab" data-tab="reports">
+        <span class="tab-icon">🚩</span>
+        <span>举报管理</span>
+        <span class="tab-badge orange-badge">举报</span>
+      </button>
+    </section>
+
+    <!-- 用户管理 -->
+    <section class="tab-content active" id="users-content">
+      <section class="search-panel">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+                  type="text"
+                  id="userSearchInput"
+                  placeholder="搜索用户姓名、学号、邮箱..."
+          />
+        </div>
+
+        <select class="filter-select" id="userStatusFilter">
+          <option value="all">所有用户</option>
+          <option value="正常">正常用户</option>
+          <option value="风险">风险用户</option>
+          <option value="限制">限制用户</option>
+          <option value="封禁">封禁用户</option>
+          <option value="黑名单">黑名单用户</option>
+        </select>
+      </section>
+
+      <section class="table-panel">
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>用户</th>
+              <th>学号</th>
+              <th>专业</th>
+              <th>信誉分</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="highlight-row">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar yellow">🧑</div>
+                  <div>
+                    <div class="cell-name">张三</div>
+                    <div class="cell-email">zhangsan@university.edu</div>
+                  </div>
+                </div>
+              </td>
+              <td>2021001234</td>
+              <td>计算机科学与技术</td>
+              <td><span class="score"><span class="star">★</span> 4.8</span></td>
+              <td><span class="status success">正常</span></td>
+              <td>
+                <div class="action-group">
+                  <button class="icon-btn blue-text">🛡</button>
+                  <button class="icon-btn red-text">⊘</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- 举报管理 -->
+    <section class="tab-content" id="reports-content"></section>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="auth.js"></script>
+  <script src="admin-manage.js?v=2"></script>
+  <script>
+    if (requireAdminPopupLogin()) {
+      bindLogout('.logout', 'login.html');
+    }
+  </script>
+</body>
+</html>
