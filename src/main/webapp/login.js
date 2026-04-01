@@ -238,7 +238,7 @@ function registerUser() {
       studentNo,
       realName,
       major,
-      grade: '大一',
+      grade: '',
       schoolEmail,
       password
     })

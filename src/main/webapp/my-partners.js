@@ -173,6 +173,7 @@ async function loadPartners() {
         course: item.course || '',
         progressCurrent: item.progressCurrent || 0,
         progressTotal: item.progressTotal || 12,
+        // trustScore 满分 100，对应 5 星评分，故除以 20 换算
         rating: item.partnerTrustScore != null ? (item.partnerTrustScore / 20).toFixed(1) : '5.0',
         matchedAt: item.createdAt ? item.createdAt.substring(0, 10) : ''
       }));

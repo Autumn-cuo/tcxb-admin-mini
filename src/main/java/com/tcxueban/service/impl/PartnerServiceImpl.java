@@ -60,10 +60,6 @@ public class PartnerServiceImpl implements PartnerService {
 
         // 接受申请时，创建搭子关系
         if (applyStatus == 1) {
-            List<PartnerApplication> received = applicationDao.getReceived(targetUserId);
-            // 重新查一下已处理的申请来获取 applicantUserId（需要从 DB 拿）
-            // 此处直接通过 getApplied 查回需要的信息 — 简单做法：通过 applyId 找记录
-            // 使用备选方案：查询对应的 apply 记录
             PartnerApplication target = findApplicationById(applyId);
             if (target != null && !relationDao.exists(target.getApplicantUserId(), targetUserId)) {
                 PartnerRelation relation = new PartnerRelation();
@@ -224,29 +220,22 @@ public class PartnerServiceImpl implements PartnerService {
      * 通过 applyId 查询申请记录（用于接受申请后获取 applicantUserId）
      */
     private PartnerApplication findApplicationById(Integer applyId) {
-        // 简单实现：查询所有，找到对应 ID 的记录
-        // 在实际场景中应在 DAO 增加 findById 方法，此处直接用 SQL 查
-        try {
-            java.sql.Connection conn = com.tcxueban.util.DBUtil.getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement(
-                    "SELECT apply_id, applicant_user_id, target_user_id, message, apply_status FROM partner_application WHERE apply_id = ?");
+        String sql = "SELECT apply_id, applicant_user_id, target_user_id, message, apply_status " +
+                "FROM partner_application WHERE apply_id = ?";
+        try (java.sql.Connection conn = com.tcxueban.util.DBUtil.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, applyId);
-            java.sql.ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                PartnerApplication app = new PartnerApplication();
-                app.setApplyId(rs.getInt("apply_id"));
-                app.setApplicantUserId(rs.getInt("applicant_user_id"));
-                app.setTargetUserId(rs.getInt("target_user_id"));
-                app.setMessage(rs.getString("message"));
-                app.setApplyStatus(rs.getInt("apply_status"));
-                rs.close();
-                ps.close();
-                conn.close();
-                return app;
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PartnerApplication app = new PartnerApplication();
+                    app.setApplyId(rs.getInt("apply_id"));
+                    app.setApplicantUserId(rs.getInt("applicant_user_id"));
+                    app.setTargetUserId(rs.getInt("target_user_id"));
+                    app.setMessage(rs.getString("message"));
+                    app.setApplyStatus(rs.getInt("apply_status"));
+                    return app;
+                }
             }
-            rs.close();
-            ps.close();
-            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

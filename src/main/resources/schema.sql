@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS admin (
     admin_id       INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     admin_account  VARCHAR(50)  NOT NULL UNIQUE COMMENT '管理员账号',
     admin_name     VARCHAR(50)  COMMENT '管理员姓名',
-    password_hash  VARCHAR(200) NOT NULL COMMENT '密码（明文，后期可改 hash）',
+    password_hash  VARCHAR(200) NOT NULL COMMENT '密码',
     admin_status   INT          NOT NULL DEFAULT 0 COMMENT '状态：0=正常',
     last_login_time DATETIME    COMMENT '最后登录时间',
     created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS user (
     real_name         VARCHAR(50)  NOT NULL COMMENT '真实姓名',
     nickname          VARCHAR(50)  COMMENT '昵称',
     school_email      VARCHAR(100) NOT NULL UNIQUE COMMENT '学校邮箱',
-    password_hash     VARCHAR(200) NOT NULL COMMENT '密码（明文，后期可改 hash）',
+    password_hash     VARCHAR(200) NOT NULL COMMENT '密码',
     gender            VARCHAR(10)  COMMENT '性别',
     major             VARCHAR(100) COMMENT '专业',
     grade             VARCHAR(20)  COMMENT '年级，如：大二',
