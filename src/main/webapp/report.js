@@ -16,11 +16,21 @@ const fileNameText = document.getElementById('fileNameText');
 const reportRecordList = document.getElementById('reportRecordList');
 const blacklistRecordList = document.getElementById('blacklistRecordList');
 
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem('tc_current_user'));
+    return (user && user.userId) ? user.userId : null;
+  } catch (e) {
+    return null;
+  }
+}
 
-const CURRENT_USER_ID = 1;
+let CURRENT_USER_ID = getCurrentUserId();
 
 let reports = [];
 let blacklist = [];
+// 学伴列表：{ name, userId }
+let partnerUserMap = [];
 
 function switchTab(target) {
   tabs.forEach((tab) => tab.classList.remove('active'));
@@ -58,33 +68,36 @@ async function apiPost(url, data) {
   return await res.json();
 }
 
-function getPartners() {
-  const defaultPartners = [
-    { name: '李四' }
-  ];
-
-  const storedPartners = JSON.parse(localStorage.getItem('appliedPartners') || '[]');
-  const merged = [...defaultPartners];
-
-  storedPartners.forEach((item) => {
-    if (!item || !item.name) return;
-    const exists = merged.some((p) => p.name === item.name);
-    if (!exists) {
-      merged.push({ name: item.name });
+async function loadPartnerList() {
+  if (!CURRENT_USER_ID) {
+    renderReportUsers();
+    return;
+  }
+  try {
+    const res = await fetch(`${BASE}/partner?action=myPartners&userId=${CURRENT_USER_ID}`);
+    const result = await res.json();
+    if (result.code === 200 && Array.isArray(result.data)) {
+      partnerUserMap = result.data.map(item => ({
+        name: item.partnerName || `用户${item.partnerUserId}`,
+        userId: item.partnerUserId
+      }));
     }
-  });
-
-  return merged;
+  } catch (e) {
+    console.warn('加载学伴列表失败，使用默认数据');
+  }
+  renderReportUsers();
 }
 
 function renderReportUsers() {
   if (!reportUser) return;
 
-  const partners = getPartners();
+  const options = partnerUserMap.length > 0
+    ? partnerUserMap
+    : [{ name: '李四', userId: 2 }]; // 未登录或无学伴时的默认
 
   reportUser.innerHTML = `
     <option value="">选择要举报的学习搭子</option>
-    ${partners.map((item) => `<option value="${item.name}">${item.name}</option>`).join('')}
+    ${options.map((item) => `<option value="${item.userId}">${item.name}</option>`).join('')}
   `;
 }
 
@@ -222,6 +235,7 @@ function resetForm() {
 }
 
 async function loadReports() {
+  if (!CURRENT_USER_ID) return;
   try {
     const result = await apiGet(`${BASE}/report?action=myList&reporterUserId=${CURRENT_USER_ID}`);
     if (result.code === 200) {
@@ -237,6 +251,7 @@ async function loadReports() {
 }
 
 async function loadBlacklist() {
+  if (!CURRENT_USER_ID) return;
   try {
     const result = await apiGet(`${BASE}/blacklist?action=list&userId=${CURRENT_USER_ID}`);
     if (result.code === 200) {
@@ -272,12 +287,12 @@ if (resetReportBtn) {
 
 if (reportBtn) {
   reportBtn.addEventListener('click', async () => {
-    const user = reportUser ? reportUser.value.trim() : '';
+    const reportedUserId = reportUser ? reportUser.value.trim() : '';
     const reason = reportReason ? reportReason.value.trim() : '';
     const desc = reportDesc ? reportDesc.value.trim() : '';
     const imageFile = reportImage && reportImage.files[0] ? reportImage.files[0] : null;
 
-    if (!user) {
+    if (!reportedUserId) {
       alert('请选择举报对象（仅限已有学习搭子）');
       return;
     }
@@ -292,17 +307,12 @@ if (reportBtn) {
       return;
     }
 
+    if (!CURRENT_USER_ID) {
+      alert('请先登录后再举报');
+      return;
+    }
+
     try {
-      const userMap = {
-        李四: 2
-      };
-
-      const reportedUserId = userMap[user];
-      if (!reportedUserId) {
-        alert('未找到该举报对象对应的用户ID，请先补充映射');
-        return;
-      }
-
       const evidenceName = imageFile ? imageFile.name : '';
 
       const result = await apiPost(`${BASE}/report`, {
@@ -360,6 +370,6 @@ document.addEventListener('click', async (e) => {
 });
 
 switchTab('report');
-renderReportUsers();
+loadPartnerList();
 loadReports();
 loadBlacklist();

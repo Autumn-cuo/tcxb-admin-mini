@@ -224,41 +224,33 @@ function validateRegisterForm() {
 }
 
 function registerUser() {
-  const users = getRegisteredUsers();
+  const studentNo = registerStudentNo.value.trim();
+  const realName = registerName.value.trim();
+  const major = registerMajor.value.trim();
+  const schoolEmail = registerEmail.value.trim();
+  const password = registerPassword.value.trim();
 
-  const newUser = {
-    id: `user_${Date.now()}`,
-    realName: registerName.value.trim(),
-    nickname: registerName.value.trim(),
-    studentNo: registerStudentNo.value.trim(),
-    major: registerMajor.value.trim(),
-    schoolEmail: registerEmail.value.trim(),
-    password: registerPassword.value.trim(),
-    grade: '大二',
-    avatar: '',
-    bio: '这个人很低调，还没写简介。',
-    role: 'student',
-    trustScore: 95,
-    createdAt: new Date().toISOString()
-  };
-
-  const duplicated = users.some(
-      (item) =>
-          item.studentNo === newUser.studentNo ||
-          item.schoolEmail === newUser.schoolEmail
-  );
-
-  if (duplicated) {
-    if (registerGlobalError) {
-      registerGlobalError.textContent = '该学号或邮箱已注册，请直接登录';
-      registerGlobalError.classList.remove('hidden');
-    }
-    return false;
-  }
-
-  users.push(newUser);
-  saveRegisteredUsers(users);
-  return true;
+  return fetch(`${window.API_BASE || '/tcxb-admin-mini'}/user`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      action: 'register',
+      studentNo,
+      realName,
+      major,
+      grade: '',
+      schoolEmail,
+      password
+    })
+  })
+    .then(res => res.json())
+    .then(result => {
+      if (result.code === 200) {
+        return { success: true, user: result.data };
+      }
+      return { success: false, msg: result.msg || '注册失败，该邮箱或学号已被注册' };
+    })
+    .catch(() => ({ success: false, msg: '注册请求失败，请检查后端是否启动' }));
 }
 
 function getDefaultStudentProfile(email) {
@@ -280,16 +272,24 @@ function getDefaultStudentProfile(email) {
   };
 }
 
-function saveLoginState() {
-  const email = loginEmail.value.trim();
+function saveLoginState(user) {
   const remember = !!rememberMe?.checked;
-
-  const users = getRegisteredUsers();
-  const matchedUser =
-      users.find((item) => item.schoolEmail === email) || getDefaultStudentProfile(email);
+  const email = loginEmail.value.trim();
 
   const userProfile = {
-    ...matchedUser,
+    userId: user.userId,
+    id: user.userId,
+    realName: user.realName,
+    nickname: user.nickname || user.realName,
+    studentNo: user.studentNo,
+    schoolEmail: user.schoolEmail,
+    major: user.major,
+    grade: user.grade,
+    trustScore: user.trustScore,
+    preferredCourses: user.preferredCourses || '',
+    preferredTimes: user.preferredTimes || '',
+    preferredPlaces: user.preferredPlaces || '',
+    role: 'student',
     loginTime: new Date().toISOString()
   };
 
@@ -303,6 +303,20 @@ function saveLoginState() {
 
   localStorage.setItem('tc_current_user', JSON.stringify(userProfile));
   localStorage.setItem('tc_auth', JSON.stringify(authState));
+
+  // 同步到 tc_user_profile 供 home.js 使用
+  const courses = user.preferredCourses
+    ? user.preferredCourses.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const profileData = {
+    name: user.realName,
+    studentNo: user.studentNo,
+    major: user.major || '',
+    grade: user.grade || '',
+    score: user.trustScore != null ? String(user.trustScore) : '100',
+    courses
+  };
+  localStorage.setItem('tc_user_profile', JSON.stringify(profileData));
 
   if (remember) {
     localStorage.setItem('tc_remembered_email', email);
@@ -399,37 +413,64 @@ if (forgetPasswordLink) {
 }
 
 if (loginBtn) {
-  loginBtn.addEventListener('click', () => {
+  loginBtn.addEventListener('click', async () => {
     const valid = validateLoginForm();
     if (!valid) return;
 
     loginBtn.disabled = true;
     loginBtn.textContent = '登录中...';
 
-    setTimeout(() => {
-      saveLoginState();
+    try {
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value.trim();
+
+      const res = await fetch(`${window.API_BASE || '/tcxb-admin-mini'}/user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ action: 'login', schoolEmail: email, password })
+      });
+      const result = await res.json();
+
+      if (result.code === 200) {
+        saveLoginState(result.data);
+        window.location.href = 'home.html';
+      } else {
+        if (loginGlobalError) {
+          loginGlobalError.textContent = result.msg || '邮箱或密码错误';
+          loginGlobalError.classList.remove('hidden');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      if (loginGlobalError) {
+        loginGlobalError.textContent = '登录请求失败，请检查后端是否启动';
+        loginGlobalError.classList.remove('hidden');
+      }
+    } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = '登录';
-      window.location.href = 'home.html';
-    }, 500);
+    }
   });
 }
 
 if (registerBtn) {
-  registerBtn.addEventListener('click', () => {
+  registerBtn.addEventListener('click', async () => {
     const valid = validateRegisterForm();
     if (!valid) return;
 
     registerBtn.disabled = true;
     registerBtn.textContent = '注册中...';
 
-    setTimeout(() => {
-      const success = registerUser();
+    try {
+      const result = await registerUser();
 
-      registerBtn.disabled = false;
-      registerBtn.textContent = '注册';
-
-      if (!success) return;
+      if (!result.success) {
+        if (registerGlobalError) {
+          registerGlobalError.textContent = result.msg || '注册失败，请重试';
+          registerGlobalError.classList.remove('hidden');
+        }
+        return;
+      }
 
       if (registerSuccessMsg) {
         registerSuccessMsg.textContent = '注册成功，请使用刚刚注册的邮箱登录';
@@ -458,7 +499,16 @@ if (registerBtn) {
 
         clearRegisterErrors();
       }, 800);
-    }, 500);
+    } catch (err) {
+      console.error(err);
+      if (registerGlobalError) {
+        registerGlobalError.textContent = '注册请求异常，请重试';
+        registerGlobalError.classList.remove('hidden');
+      }
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.textContent = '注册';
+    }
   });
 }
 

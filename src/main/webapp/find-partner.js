@@ -19,80 +19,89 @@ const placeTags = document.getElementById('placeTags');
 const styleTags = document.getElementById('styleTags');
 const viewProfileBtn = document.getElementById('viewProfileBtn');
 
-const partners = [
-  {
-    id: 'lisi',
-    avatar: '👩‍🦳',
-    avatarClass: 'blue',
-    name: '李四',
-    major: '计算机科学与技术',
-    detailMajor: '计算机科学与技术 · 大三年级 · 2021001235',
-    score: '4.9',
-    match: 95,
-    intro: '认真学习，追求卓越，喜欢有计划地推进学习任务。',
-    course: '数据结构',
-    courses: ['数据结构', '算法设计', '数据库系统'],
-    times: ['晚上', '下午'],
-    places: ['图书馆', '咖啡厅'],
-    styles: ['深度学习', '项目实践'],
-    reasons: [
-      { text: '你们都在学习“数据结构”和“算法设计”', percent: 30, color: '#3f6fb5' },
-      { text: '学习时间高度重合：晚上、下午', percent: 25, color: '#16a34a' },
-      { text: '都偏好在图书馆学习', percent: 20, color: '#9333ea' },
-      { text: '学习风格相似：深度学习、项目实践', percent: 15, color: '#db2777' },
-      { text: '信任分数相近，学习态度认真', percent: 5, color: '#ea580c' }
-    ]
-  },
-  {
-    id: 'wangwu',
-    avatar: '👨',
-    avatarClass: 'deep-blue',
-    name: '王五',
-    major: '软件工程',
-    detailMajor: '软件工程 · 大三年级 · 2021001236',
-    score: '4.6',
-    match: 82,
-    intro: '擅长项目开发，习惯先拆分任务再一起推进。',
-    course: '操作系统',
-    courses: ['操作系统', '软件工程'],
-    times: ['周末', '晚上'],
-    places: ['图书馆'],
-    styles: ['讨论交流', '项目实践'],
-    reasons: [
-      { text: '都在学习操作系统相关内容', percent: 28, color: '#3f6fb5' },
-      { text: '时间安排较匹配：周末、晚上', percent: 22, color: '#16a34a' },
-      { text: '都愿意一起讨论实验与项目', percent: 18, color: '#9333ea' },
-      { text: '偏好地点接近：图书馆', percent: 16, color: '#db2777' },
-      { text: '合作节奏较一致', percent: 8, color: '#ea580c' }
-    ]
-  },
-  {
-    id: 'zhaoliu',
-    avatar: '👩',
-    avatarClass: 'pink',
-    name: '赵六',
-    major: '计算机科学与技术',
-    detailMajor: '计算机科学与技术 · 大三年级 · 2021001237',
-    score: '4.7',
-    match: 78,
-    intro: '偏安静自习，做题耐心，适合长期稳定学习搭子。',
-    course: '计算机网络',
-    courses: ['计算机网络', '数据库系统'],
-    times: ['下午'],
-    places: ['自习室'],
-    styles: ['安静自习', '独立学习'],
-    reasons: [
-      { text: '课程方向较接近', percent: 24, color: '#3f6fb5' },
-      { text: '时间段有交集：下午', percent: 20, color: '#16a34a' },
-      { text: '都喜欢安静自习环境', percent: 18, color: '#9333ea' },
-      { text: '地点偏好接近：自习室', percent: 12, color: '#db2777' },
-      { text: '基础能力较接近', percent: 6, color: '#ea580c' }
-    ]
-  }
-];
+const BASE = window.API_BASE || '/tcxb-admin-mini';
 
-let filteredPartners = [...partners];
-let currentPartner = partners[0];
+const AVATAR_EMOJIS = ['👩‍🦳', '👨', '👩', '👨‍💻', '👩‍💻', '🧑', '👦', '👧'];
+const AVATAR_CLASSES = ['blue', 'deep-blue', 'pink', 'green', 'purple', 'orange'];
+
+function getAvatarEmoji(userId) {
+  return AVATAR_EMOJIS[userId % AVATAR_EMOJIS.length];
+}
+
+function getAvatarClass(userId) {
+  return AVATAR_CLASSES[userId % AVATAR_CLASSES.length];
+}
+
+function mapBackendPartner(item) {
+  const courses = item.preferredCourses
+    ? item.preferredCourses.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const times = item.preferredTimes
+    ? item.preferredTimes.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const places = item.preferredPlaces
+    ? item.preferredPlaces.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  return {
+    id: String(item.userId),
+    userId: item.userId,
+    avatar: getAvatarEmoji(item.userId),
+    avatarClass: getAvatarClass(item.userId),
+    name: item.realName || item.nickname || '同学',
+    major: item.major || '未填写',
+    detailMajor: `${item.major || '未填写'} · ${item.grade || ''} · ${item.studentNo || ''}`,
+    score: item.trustScore != null ? String(item.trustScore) : '100',
+    match: item.matchScore || 50,
+    intro: '这位同学还没有填写简介。',
+    course: courses[0] || 'all',
+    courses,
+    times,
+    places,
+    styles: [],
+    reasons: Array.isArray(item.matchReasons) ? item.matchReasons : []
+  };
+}
+
+let partners = [];
+let filteredPartners = [];
+let currentPartner = null;
+
+async function loadRecommendations() {
+  let currentUserId = null;
+  try {
+    const user = JSON.parse(localStorage.getItem('tc_current_user'));
+    if (user && user.userId) currentUserId = user.userId;
+  } catch (e) {}
+
+  if (!currentUserId) {
+    partnerList.innerHTML = '<div class="empty-tip">请先登录后查看推荐学伴</div>';
+    resultCount.textContent = '找到 0 个匹配结果';
+    return;
+  }
+
+  partnerList.innerHTML = '<div class="empty-tip">加载中...</div>';
+
+  try {
+    const res = await fetch(`${BASE}/partner?action=recommend&userId=${currentUserId}`);
+    const result = await res.json();
+
+    if (result.code === 200 && Array.isArray(result.data)) {
+      partners = result.data.map(mapBackendPartner);
+    } else {
+      partners = [];
+    }
+  } catch (e) {
+    console.error('加载推荐失败:', e);
+    partners = [];
+  }
+
+  filteredPartners = [...partners];
+  currentPartner = partners[0] || null;
+
+  renderPartnerList();
+  if (currentPartner) renderDetail(currentPartner);
+}
 
 function renderPartnerList() {
   if (filteredPartners.length === 0) {
@@ -172,7 +181,7 @@ function applyFilters() {
     return courseOk && matchOk;
   });
 
-  if (!filteredPartners.find((item) => item.id === currentPartner.id)) {
+  if (currentPartner && !filteredPartners.find((item) => item.id === currentPartner.id)) {
     currentPartner = filteredPartners[0] || null;
   }
 
@@ -203,31 +212,51 @@ partnerList.addEventListener('click', (e) => {
   renderDetail(currentPartner);
 });
 
-applyBtn.addEventListener('click', () => {
+applyBtn.addEventListener('click', async () => {
   if (!currentPartner) {
     alert('当前没有可申请的学伴');
     return;
   }
 
-  const appliedPartners = JSON.parse(localStorage.getItem('appliedPartners') || '[]');
+  let currentUserId = null;
+  try {
+    const user = JSON.parse(localStorage.getItem('tc_current_user'));
+    if (user && user.userId) currentUserId = user.userId;
+  } catch (e) {}
 
-  const exists = appliedPartners.some((item) => item.name === currentPartner.name);
-
-  if (exists) {
-    alert(`你已经向 ${currentPartner.name} 发送过申请了`);
+  if (!currentUserId) {
+    alert('请先登录后再申请学伴');
     return;
   }
 
-  appliedPartners.push({
-    name: currentPartner.name,
-    course: currentPartner.course,
-    progressTotal: 12,
-    matchedAt: new Date().toISOString().slice(0, 10)
-  });
+  applyBtn.disabled = true;
+  applyBtn.textContent = '申请中...';
 
-  localStorage.setItem('appliedPartners', JSON.stringify(appliedPartners));
+  try {
+    const res = await fetch(`${BASE}/partner`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'apply',
+        applicantUserId: currentUserId,
+        targetUserId: currentPartner.userId,
+        message: ''
+      })
+    });
+    const result = await res.json();
 
-  alert(`已向 ${currentPartner.name} 发送学伴申请！`);
+    if (result.code === 200) {
+      alert(`已向 ${currentPartner.name} 发送学伴申请！`);
+    } else {
+      alert(result.msg || '申请发送失败');
+    }
+  } catch (e) {
+    console.error(e);
+    alert('申请发送失败，请检查后端是否启动');
+  } finally {
+    applyBtn.disabled = false;
+    applyBtn.textContent = '申请学伴';
+  }
 });
 
 if (viewProfileBtn) {
@@ -239,5 +268,5 @@ if (viewProfileBtn) {
   });
 }
 
-renderPartnerList();
-renderDetail(currentPartner);
+// 初始化：从后端加载推荐学伴
+loadRecommendations();

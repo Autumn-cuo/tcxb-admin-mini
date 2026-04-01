@@ -58,12 +58,32 @@ function getToday() {
    个人资料模块
 ========================= */
 function getProfileData() {
+  // 优先从登录状态中取
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
   const saved = localStorage.getItem('tc_user_profile');
 
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      // 如果有真实 userId，说明数据来自后端，直接使用
+      if (parsed && parsed.name) return parsed;
     } catch (e) {}
+  }
+
+  if (currentUser) {
+    const courses = currentUser.preferredCourses
+      ? currentUser.preferredCourses.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+    const profile = {
+      name: currentUser.realName || currentUser.nickname || '同学',
+      studentNo: currentUser.studentNo || '',
+      major: currentUser.major || '',
+      grade: currentUser.grade || '',
+      score: currentUser.trustScore != null ? String(currentUser.trustScore) : '100',
+      courses
+    };
+    localStorage.setItem('tc_user_profile', JSON.stringify(profile));
+    return profile;
   }
 
   const defaultProfile = {
@@ -177,6 +197,42 @@ function handleSaveProfile() {
   saveProfileData(newProfile);
   renderProfile();
   closeProfileModal();
+
+  // 同步到后端
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  if (currentUser && currentUser.userId) {
+    const BASE = window.API_BASE || '/tcxb-admin-mini';
+    fetch(`${BASE}/user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: 'updateProfile',
+        userId: currentUser.userId,
+        realName: name,
+        major,
+        grade,
+        preferredCourses: courses.join(','),
+        preferredTimes: currentUser.preferredTimes || '',
+        preferredPlaces: currentUser.preferredPlaces || ''
+      })
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result.code === 200 && result.data) {
+          // 更新 localStorage 中的用户信息
+          const updated = {
+            ...currentUser,
+            realName: name,
+            major,
+            grade,
+            preferredCourses: courses.join(',')
+          };
+          localStorage.setItem('tc_current_user', JSON.stringify(updated));
+        }
+      })
+      .catch(err => console.error('更新资料失败:', err));
+  }
+
   alert('个人资料已更新');
 }
 

@@ -16,6 +16,9 @@ public class User {
     private Integer accountStatus;
     private Integer roleType;
     private Integer trustScore;
+    private String preferredCourses;
+    private String preferredTimes;
+    private String preferredPlaces;
     private Date createdAt;
     private Date updatedAt;
 
@@ -113,6 +116,30 @@ public class User {
 
     public void setTrustScore(Integer trustScore) {
         this.trustScore = trustScore;
+    }
+
+    public String getPreferredCourses() {
+        return preferredCourses;
+    }
+
+    public void setPreferredCourses(String preferredCourses) {
+        this.preferredCourses = preferredCourses;
+    }
+
+    public String getPreferredTimes() {
+        return preferredTimes;
+    }
+
+    public void setPreferredTimes(String preferredTimes) {
+        this.preferredTimes = preferredTimes;
+    }
+
+    public String getPreferredPlaces() {
+        return preferredPlaces;
+    }
+
+    public void setPreferredPlaces(String preferredPlaces) {
+        this.preferredPlaces = preferredPlaces;
     }
 
     public Date getCreatedAt() {
